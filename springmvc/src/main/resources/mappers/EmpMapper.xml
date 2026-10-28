@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexagon.springmvc.mapper.EmpMapper">
+				
+	<insert id="insert" parameterType="Emp">
+		insert into emp(emp_id, ename, age, email) 
+		values(seq_emp.nextval, #{ename}, #{age}, #{email} )
+	
+		<!-- 위에서 insert 하자 마자 pk 값 가져오기  -->
+		<selectKey keyColumn="emp_id" keyProperty="empId" order="AFTER" resultType="int">
+			<!--
+				 mysql 에서 현재 이 세션에서 일으킨 insert 로 인한 최대 pk 값 구하기
+				select last_insert_id() as emp_id from emp
+				 -->
+				<!-- 오라클에서 현재 이 세션에서 일으킨 insert 로 인한 현재까지의 시퀀스 값 구하기 
+						dual 은 그냥 아무 의미없는 목적의 테이블이다. 여기엔 달랑 컬럼1개 , 레코드 1개 있다.
+						또한 반드시 dual 사용은 필수가 아니며, 개발자가 컬럼1개 레코드1개를 직접 만들어서 써도 된다.
+						결론) select 문의 문법을 맞추기 위함 + 레코드를 1건만 가져오기 위함	 
+				-->
+				select seq_emp.currval as emp_id from dual
+		</selectKey>
+	</insert>	
+	
+		<resultMap type="Emp" id="joinMap">
+			<id column="emp_id" property="empId"/>
+			<result column="ename" 		property="ename"/>
+			<result column="age" 		property="age"/>
+			<result column="email" 		property="email"/>
+			<result column="height" 		property="bio.height"/>
+			<result column="weight" 		property="bio.weight"/>
+			<result column="blood_type" 		property="bio.bloodType"/>
+		</resultMap>
+	
+	<!-- 모든 사원정보 가져오기  emp 와 bio 와의 조인-->
+	<!-- emp와 bio를 모두 담아야 하지만 , 자동 매핑에 의해서는 불가능하므로, 이럴 경우 
+			개발자가 직접 매핑을 처리해야 한다.. resultMap 을 사용하자
+			
+			모든 레코드를 요청시마다 가져올 경우 , 레코드 수와 브라우저 클라이언트 요청 수가 많을 경우 
+			부하가 걸린다.. 문제해결) 어차피 화면에 보여줄 레코드 수가 제한되어있으므로 골라서 가져온다
+			mysql : limit 몇번째부터 몇건 
+			ex) select * from emp limit 0,10     처음10건   1page
+				  select * from emp limit 10,10    10건을 제외한 그 다음 10건   2page
+			
+	 -->
+	 <sql id="joinSql">
+		select e.emp_id as emp_id, ename, age, email, height, weight, blood_type
+		from emp e join bio b
+		on e.emp_id = b.emp_id
+	 </sql>
+	 
+	 
+	<select id="selectAll" resultMap="joinMap" parameterType="Pager">
+		<include refid="joinSql"/>
+		offset #{offset} rows fetch next #{pageSize} rows only <!--offset 에는 몇번째 레코드부터 가져올지 결정 (0부터 시작), next 뒤에는 몇건씩 가져올지 결정 -->
+	</select>
+	
+	<!--
+		기존 select 문으로 데이터를 가져올떄 offset, pageSize 를 이용하지 않았다. 이때는 반환된 List 의 size() 가 곧 게시물의 총 수였다.
+		하지만 offset, pageSize 를 이용하는 쿼리문에서는 총 레코드 수를 알 방법이 없으므로, 따로 별도의 쿼리를 실행하여 구해야 한다.. 	
+	  -->
+	<select id="selectTotalCount" resultType="int">
+		select count(*) as totalCount from emp
+	</select>
+	
+	<!--  레코드 한건 가져오기 -->
+	<select id="select" parameterType="int" resultMap="joinMap">
+		<include refid="joinSql"/>
+		where e.emp_id=#{empId}
+	</select>
+	
+</mapper>

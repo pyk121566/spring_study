@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.hexagon.springmvc.common.web.Pager"		 alias="Pager"/>
+		<typeAlias type="com.hexagon.springmvc.domain.Emp" 				 alias="Emp"/>
+		<typeAlias type="com.hexagon.springmvc.domain.Bio" 				 alias="Bio"/>
+		<typeAlias type="com.hexagon.springmvc.domain.Admin" 			 alias="Admin"/>
+		<typeAlias type="com.hexagon.springmvc.domain.TopCategory" 			 alias="TopCategory"/>
+		<typeAlias type="com.hexagon.springmvc.domain.SubCategory" 			 alias="SubCategory"/>
+		<typeAlias type="com.hexagon.springmvc.domain.News" 			 alias="News"/>
+	</typeAliases>
+	
+</configuration>
